@@ -1,57 +1,80 @@
+```html
 <!DOCTYPE html>
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🍻 Ölbingo 🍻</title>
 
 <style>
 body {
-  font-family: sans-serif;
-  background: #111;
-  color: white;
-  text-align: center;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
 }
+
+h1 {
+    margin-bottom: 10px;
+}
+
+#player {
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
 .grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-  max-width: 600px;
-  margin: 20px auto;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    max-width: 700px;
+    margin: 0 auto;
 }
+
 .cell {
-  border: 2px solid white;
-  padding: 10px;
-  min-height: 80px;
-  cursor: pointer;
-  font-size: 13px;
+    border: 2px solid white;
+    padding: 10px;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #222;
+    transition: 0.2s;
+    font-size: 13px;
 }
+
+.cell:hover {
+    background: #333;
+}
+
 .done {
-  background: #00c853;
-  color: black;
-  font-weight: bold;
+    background: #00c853;
+    color: black;
+    font-weight: bold;
+}
+
+#bingo {
+    margin-top: 20px;
+    font-size: 36px;
+    color: gold;
 }
 </style>
-
 </head>
+
 <body>
 
-<h1>🍻 Bingohelg</h1>
+<h1>🍻 Bingohelg 🍻</h1>
+
 <div id="player"></div>
+
 <div class="grid" id="grid"></div>
+
 <h2 id="bingo"></h2>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-
 <script>
-const firebaseConfig = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME",
-  projectId: "REPLACE_ME"
-};
-
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
 const tasks = [
 "Hitta någon som ser ut att heta Kenneth",
@@ -59,21 +82,25 @@ const tasks = [
 "Beställ den mest manliga drinken i baren",
 "Fråga om vägen till Paldiski Palace",
 "Drick en öl utan händer",
+
 "Beställ en öl >50cl",
 "Ge Marcus ett smeknamn",
 "Drick något med djur på etiketten",
 "Beställ minst manliga drinken",
 "Hitta någon som heter Kenneth",
+
 "Irish Carbomb",
 "Svep öl på 10 sek",
 "Slå Marcus i armbrytning",
 "Byt plats varje klunk",
 "3x Hotshots",
+
 "Kalla bartendern Mr Kuuk",
 "Drick något på dina initialer",
 "Shot av minst beställda",
 "Hoppsasteg mellan pubar",
 "Beställ öl på svenska",
+
 "Säg 'första är så jävla god'",
 "Brun 7",
 "Starta allsång",
@@ -84,75 +111,94 @@ const tasks = [
 let player = localStorage.getItem("bingo_name");
 
 if (!player) {
-  player = prompt("Ditt namn:");
-  localStorage.setItem("bingo_name", player);
+    player = prompt("Ange ditt namn:");
+    if (!player) player = "Spelare";
+    localStorage.setItem("bingo_name", player);
 }
 
-document.getElementById("player").innerText = "Spelare: " + player;
+document.getElementById("player").innerText =
+    "Spelare: " + player;
 
 const grid = document.getElementById("grid");
 
-let state = [];
+let state = JSON.parse(
+    localStorage.getItem("bingo_state_" + player) || "[]"
+);
 
-const docRef = db.collection("bingo").doc(player);
-
-docRef.onSnapshot((doc) => {
-  if (doc.exists) {
-    state = doc.data().checked || [];
-    render();
-  } else {
-    docRef.set({ checked: [] });
-  }
-});
+function saveState() {
+    localStorage.setItem(
+        "bingo_state_" + player,
+        JSON.stringify(state)
+    );
+}
 
 function toggle(i) {
-  if (state.includes(i)) {
-    state = state.filter(x => x !== i);
-  } else {
-    state.push(i);
-  }
-  docRef.set({ checked: state });
+
+    if (state.includes(i)) {
+        state = state.filter(x => x !== i);
+    } else {
+        state.push(i);
+    }
+
+    saveState();
+    render();
 }
 
 function render() {
-  grid.innerHTML = "";
 
-  tasks.forEach((task, i) => {
-    const div = document.createElement("div");
-    div.className = "cell";
-    div.innerText = task;
+    grid.innerHTML = "";
 
-    if (state.includes(i)) div.classList.add("done");
+    tasks.forEach((task, i) => {
 
-    div.onclick = () => toggle(i);
+        const div = document.createElement("div");
 
-    grid.appendChild(div);
-  });
+        div.className = "cell";
+        div.innerText = task;
 
-  checkBingo();
+        if (state.includes(i)) {
+            div.classList.add("done");
+        }
+
+        div.addEventListener("click", () => toggle(i));
+
+        grid.appendChild(div);
+    });
+
+    checkBingo();
 }
 
 function checkBingo() {
-  const lines = [
-    [0,1,2,3,4],
-    [5,6,7,8,9],
-    [10,11,12,13,14],
-    [15,16,17,18,19],
-    [20,21,22,23,24],
-    [0,5,10,15,20],
-    [1,6,11,16,21],
-    [2,7,12,17,22],
-    [3,8,13,18,23],
-    [4,9,14,19,24],
-    [0,6,12,18,24],
-    [4,8,12,16,20]
-  ];
 
-  const bingo = lines.some(line => line.every(i => state.includes(i)));
+    const lines = [
 
-  document.getElementById("bingo").innerText = bingo ? "🎉 BINGO!" : "";
+        [0,1,2,3,4],
+        [5,6,7,8,9],
+        [10,11,12,13,14],
+        [15,16,17,18,19],
+        [20,21,22,23,24],
+
+        [0,5,10,15,20],
+        [1,6,11,16,21],
+        [2,7,12,17,22],
+        [3,8,13,18,23],
+        [4,9,14,19,24],
+
+        [0,6,12,18,24],
+        [4,8,12,16,20]
+    ];
+
+    const bingo = lines.some(line =>
+        line.every(i => state.includes(i))
+    );
+
+    document.getElementById("bingo").innerText =
+        bingo ? "🎉 BINGO! 🎉" : "";
 }
+
+render();
+
 </script>
 
 </body>
 </html>
+```
