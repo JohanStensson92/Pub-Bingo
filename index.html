@@ -28,21 +28,21 @@ h1 {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 6px;
-    max-width: 900px; /* större så längre text får plats */
+    max-width: 900px;
     margin: 0 auto;
 }
 
 .cell {
     border: 2px solid white;
     padding: 10px;
-    min-height: 140px; /* högre för att rymma längre text */
+    min-height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     background: #222;
     transition: 0.2s;
-    font-size: 14px; /* större text */
+    font-size: 14px;
     text-align: center;
     word-wrap: break-word;
 }
@@ -76,7 +76,8 @@ h1 {
 <h2 id="bingo"></h2>
 
 <script>
-const tasks = [
+// Kategorier
+const easyTasks = [
 "Slå Marcus I armbrytning",
 "Svep en shot av de minst beställda i baren",
 "Få en killes telefonnummer",
@@ -90,7 +91,10 @@ const tasks = [
 "Beställ den mest manliga drinken i baren",
 "Säg ” Den första är så jävla god” innan varje klunk du dricker på en öl.",
 "Beställ en öl som är större än 50 cl",
-"Drick en Irish Carbomb",
+"Drick en Irish Carbomb"
+];
+
+const mediumTasks = [
 "Split the G",
 "Brun 7",
 "Starta en allsång och få baren att sjunga med i Happy Birthday till nån runt bordet.",
@@ -98,11 +102,28 @@ const tasks = [
 "Få en främling att hitta på ett smeknamn till Marcus. (Bästa röstas fram lördag kväll)",
 "Kalla bartender (tydligt) för Mr. Kuuk",
 "Drick en öl där varje klunk måste skålas med en okänd person.",
-"Drick något som börjar på dina initialer (för och efternamn)",
+"Drick något som börjar på dina initialer (för och efternamn)"
+];
+
+const hardTasks = [
 "Hitta en som faktiskt heter Kenneth (det finns 485 i Estland)",
 "Beställ en öl på svenska (bara säga ölmärket gills inte).",
 "Drick en hel öl (utan att någonsin ta i glaset med händerna)"
 ];
+
+// Slumpfunktion
+function shuffle(array) {
+    return array.sort(() => Math.random() - 0.5);
+}
+
+// Plocka uppgifter till brickan
+let tasks = [];
+tasks = tasks.concat(shuffle(easyTasks).slice(0,14));
+tasks = tasks.concat(shuffle(mediumTasks).slice(0,8));
+tasks = tasks.concat(shuffle(hardTasks).slice(0,3));
+
+// Slumpa hela brickan för extra blandning
+tasks = shuffle(tasks);
 
 let player = localStorage.getItem("bingo_name");
 
