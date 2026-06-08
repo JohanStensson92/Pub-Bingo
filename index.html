@@ -28,21 +28,23 @@ h1 {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 6px;
-    max-width: 700px;
+    max-width: 900px; /* större så längre text får plats */
     margin: 0 auto;
 }
 
 .cell {
     border: 2px solid white;
     padding: 10px;
-    min-height: 90px;
+    min-height: 140px; /* högre för att rymma längre text */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     background: #222;
     transition: 0.2s;
-    font-size: 13px;
+    font-size: 14px; /* större text */
+    text-align: center;
+    word-wrap: break-word;
 }
 
 .cell:hover {
@@ -75,31 +77,31 @@ h1 {
 
 <script>
 const tasks = [
-"Hitta någon som ser ut att heta Kenneth",
-"Split the G",
+"Slå Marcus I armbrytning",
+"Svep en shot av de minst beställda i baren",
+"Få en killes telefonnummer",
+"Hitta någon som ser ut att heta Kenneth och få bild med honom.",
+"Fråga en utomstående person om vägen till Paldiski Palace",
+"Koka kaffe, Vispa grädde, HOTSHOT HOTSHOT HOTSHOT",
+"Gå med hoppsasteg mellan två pubar.",
+"Byt plats med någon efter varje klunk tills ölen är slut.",
+"Drick något vars etikett innehåller ett djur.",
+"Beställ den minst manliga drinken i baren.",
 "Beställ den mest manliga drinken i baren",
-"Fråga om vägen till Paldiski Palace",
-"Drick en öl utan händer",
-"Beställ en öl >50cl",
-"Ge Marcus ett smeknamn",
-"Drick något med djur på etiketten",
-"Beställ minst manliga drinken",
-"Hitta någon som heter Kenneth",
-"Irish Carbomb",
-"Svep öl på 10 sek",
-"Slå Marcus i armbrytning",
-"Byt plats varje klunk",
-"3x Hotshots",
-"Kalla bartendern Mr Kuuk",
-"Drick något på dina initialer",
-"Shot av minst beställda",
-"Hoppsasteg mellan pubar",
-"Beställ öl på svenska",
-"Säg 'första är så jävla god'",
+"Säg ” Den första är så jävla god” innan varje klunk du dricker på en öl.",
+"Beställ en öl som är större än 50 cl",
+"Drick en Irish Carbomb",
+"Split the G",
 "Brun 7",
-"Starta allsång",
-"Skåla varje klunk",
-"Få ett nummer"
+"Starta en allsång och få baren att sjunga med i Happy Birthday till nån runt bordet.",
+"Svep en öl på 10 sekunder",
+"Få en främling att hitta på ett smeknamn till Marcus. (Bästa röstas fram lördag kväll)",
+"Kalla bartender (tydligt) för Mr. Kuuk",
+"Drick en öl där varje klunk måste skålas med en okänd person.",
+"Drick något som börjar på dina initialer (för och efternamn)",
+"Hitta en som faktiskt heter Kenneth (det finns 485 i Estland)",
+"Beställ en öl på svenska (bara säga ölmärket gills inte).",
+"Drick en hel öl (utan att någonsin ta i glaset med händerna)"
 ];
 
 let player = localStorage.getItem("bingo_name");
