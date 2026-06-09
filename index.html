@@ -15,9 +15,7 @@ body {
     padding: 20px;
 }
 
-h1 {
-    margin-bottom: 10px;
-}
+h1 { margin-bottom: 10px; }
 
 #player {
     margin-bottom: 20px;
@@ -47,9 +45,7 @@ h1 {
     word-wrap: break-word;
 }
 
-.cell:hover {
-    background: #333;
-}
+.cell:hover { background: #333; }
 
 .done {
     background: #00c853;
@@ -86,11 +82,11 @@ h1 {
 .popup-content {
     background: #222;
     color: white;
-    margin: 10% auto;
+    margin: 8% auto;
     padding: 25px;
     border: 2px solid white;
     width: 90%;
-    max-width: 400px;
+    max-width: 500px;
     border-radius: 10px;
     text-align: center;
 }
@@ -102,8 +98,17 @@ h1 {
 }
 
 .score-row {
-    margin: 12px 0;
-    font-size: 18px;
+    display: grid;
+    grid-template-columns: 1fr 80px 120px;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #444;
+    font-size: 16px;
+}
+
+.score-header {
+    font-weight: bold;
+    color: gold;
 }
 </style>
 </head>
@@ -128,8 +133,32 @@ h1 {
     </div>
 </div>
 
-<script>
-// Kategorier
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyByTUdT8g5dbFCe7qOo7gpelc5IMwRtuOg",
+  authDomain: "bingo-e9f93.firebaseapp.com",
+  databaseURL: "https://bingo-e9f93-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bingo-e9f93",
+  storageBucket: "bingo-e9f93.firebasestorage.app",
+  messagingSenderId: "23886747884",
+  appId: "1:23886747884:web:938d98eede4162df022dc9"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
 const easyTasks = [
 "Slå Marcus I armbrytning",
 "Svep en shot av de minst beställda i baren",
@@ -164,7 +193,6 @@ const hardTasks = [
 "Drick en hel öl (utan att någonsin ta i glaset med händerna)"
 ];
 
-// Fast placering av brickor, utan slump
 const tasks = [
     easyTasks[0],   mediumTasks[0], easyTasks[1],   hardTasks[0],   easyTasks[2],
     mediumTasks[1], easyTasks[3],   easyTasks[4],   mediumTasks[2], easyTasks[5],
@@ -181,20 +209,25 @@ if (!player) {
     localStorage.setItem("bingo_name", player);
 }
 
-document.getElementById("player").innerText =
-    "Spelare: " + player;
+const safePlayerId = player.toLowerCase().replace(/[^a-z0-9åäö]/gi, "_");
+
+document.getElementById("player").innerText = "Spelare: " + player;
 
 const grid = document.getElementById("grid");
 
-let state = JSON.parse(
-    localStorage.getItem("bingo_state_" + player) || "[]"
-);
+let state = JSON.parse(localStorage.getItem("bingo_state_" + player) || "[]");
+let allPlayers = {};
 
 function saveState() {
-    localStorage.setItem(
-        "bingo_state_" + player,
-        JSON.stringify(state)
-    );
+    localStorage.setItem("bingo_state_" + player, JSON.stringify(state));
+
+    set(ref(database, "players/" + safePlayerId), {
+        name: player,
+        checked: state,
+        score: state.length,
+        bingo: hasBingo(),
+        updatedAt: Date.now()
+    });
 }
 
 function toggle(i) {
@@ -203,20 +236,27 @@ function toggle(i) {
     } else {
         state.push(i);
     }
+
     saveState();
     render();
 }
 
 function render() {
     grid.innerHTML = "";
+
     tasks.forEach((task, i) => {
         const div = document.createElement("div");
         div.className = "cell";
         div.innerText = task;
-        if (state.includes(i)) div.classList.add("done");
+
+        if (state.includes(i)) {
+            div.classList.add("done");
+        }
+
         div.addEventListener("click", () => toggle(i));
         grid.appendChild(div);
     });
+
     checkBingo();
 }
 
@@ -245,15 +285,42 @@ function checkBingo() {
 }
 
 function updateScoreboard() {
-    const checkedCount = state.length;
-    const bingoText = hasBingo() ? "Har fått bingo 🎉" : "Ingen bingo ännu";
+    const scoreboard = document.getElementById("scoreboard");
 
-    document.getElementById("scoreboard").innerHTML = `
-        <div class="score-row"><strong>${player}</strong></div>
-        <div class="score-row">${checkedCount}/25 avklarade</div>
-        <div class="score-row">${bingoText}</div>
+    const playersArray = Object.values(allPlayers).sort((a, b) => {
+        if (b.bingo !== a.bingo) return b.bingo - a.bingo;
+        return b.score - a.score;
+    });
+
+    let html = `
+        <div class="score-row score-header">
+            <div>Spelare</div>
+            <div>Score</div>
+            <div>Bingo</div>
+        </div>
     `;
+
+    if (playersArray.length === 0) {
+        html += `<div class="score-row"><div>Inga spelare ännu</div><div>-</div><div>-</div></div>`;
+    }
+
+    playersArray.forEach(p => {
+        html += `
+            <div class="score-row">
+                <div>${p.name}</div>
+                <div>${p.score}/25</div>
+                <div>${p.bingo ? "🎉 Bingo" : "Nej"}</div>
+            </div>
+        `;
+    });
+
+    scoreboard.innerHTML = html;
 }
+
+onValue(ref(database, "players"), (snapshot) => {
+    allPlayers = snapshot.val() || {};
+    updateScoreboard();
+});
 
 document.getElementById("scoreBtn").addEventListener("click", () => {
     updateScoreboard();
@@ -272,6 +339,7 @@ window.addEventListener("click", (event) => {
 });
 
 render();
+saveState();
 </script>
 
 </body>
