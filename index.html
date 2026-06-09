@@ -62,6 +62,49 @@ h1 {
     font-size: 36px;
     color: gold;
 }
+
+#scoreBtn {
+    margin-top: 15px;
+    padding: 10px 18px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.75);
+}
+
+.popup-content {
+    background: #222;
+    color: white;
+    margin: 10% auto;
+    padding: 25px;
+    border: 2px solid white;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+#closeScore {
+    float: right;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.score-row {
+    margin: 12px 0;
+    font-size: 18px;
+}
 </style>
 </head>
 
@@ -74,6 +117,16 @@ h1 {
 <div class="grid" id="grid"></div>
 
 <h2 id="bingo"></h2>
+
+<button id="scoreBtn">Visa scoreboard</button>
+
+<div id="scorePopup" class="popup">
+    <div class="popup-content">
+        <span id="closeScore">&times;</span>
+        <h2>Scoreboard</h2>
+        <div id="scoreboard"></div>
+    </div>
+</div>
 
 <script>
 // Kategorier
@@ -112,16 +165,13 @@ const hardTasks = [
 ];
 
 // Fast placering av brickor, utan slump
-// E = lätt, M = medel, H = svår
-const taskLayout = [
+const tasks = [
     easyTasks[0],   mediumTasks[0], easyTasks[1],   hardTasks[0],   easyTasks[2],
     mediumTasks[1], easyTasks[3],   easyTasks[4],   mediumTasks[2], easyTasks[5],
     easyTasks[6],   hardTasks[1],   mediumTasks[3], easyTasks[7],   mediumTasks[4],
     easyTasks[8],   mediumTasks[5], easyTasks[9],   hardTasks[2],   easyTasks[10],
     mediumTasks[6], easyTasks[11],  easyTasks[12],  mediumTasks[7], easyTasks[13]
 ];
-
-let tasks = taskLayout;
 
 let player = localStorage.getItem("bingo_name");
 
@@ -170,7 +220,7 @@ function render() {
     checkBingo();
 }
 
-function checkBingo() {
+function hasBingo() {
     const lines = [
         [0,1,2,3,4],
         [5,6,7,8,9],
@@ -185,10 +235,41 @@ function checkBingo() {
         [0,6,12,18,24],
         [4,8,12,16,20]
     ];
-    const bingo = lines.some(line => line.every(i => state.includes(i)));
-    document.getElementById("bingo").innerText =
-        bingo ? "🎉 BINGO! 🎉" : "";
+
+    return lines.some(line => line.every(i => state.includes(i)));
 }
+
+function checkBingo() {
+    document.getElementById("bingo").innerText =
+        hasBingo() ? "🎉 BINGO! 🎉" : "";
+}
+
+function updateScoreboard() {
+    const checkedCount = state.length;
+    const bingoText = hasBingo() ? "Har fått bingo 🎉" : "Ingen bingo ännu";
+
+    document.getElementById("scoreboard").innerHTML = `
+        <div class="score-row"><strong>${player}</strong></div>
+        <div class="score-row">${checkedCount}/25 avklarade</div>
+        <div class="score-row">${bingoText}</div>
+    `;
+}
+
+document.getElementById("scoreBtn").addEventListener("click", () => {
+    updateScoreboard();
+    document.getElementById("scorePopup").style.display = "block";
+});
+
+document.getElementById("closeScore").addEventListener("click", () => {
+    document.getElementById("scorePopup").style.display = "none";
+});
+
+window.addEventListener("click", (event) => {
+    const popup = document.getElementById("scorePopup");
+    if (event.target === popup) {
+        popup.style.display = "none";
+    }
+});
 
 render();
 </script>
