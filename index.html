@@ -137,12 +137,6 @@ h1 { margin-bottom: 10px; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyByTUdT8g5dbFCe7qOo7gpelc5IMwRtuOg",
   authDomain: "bingo-e9f93.firebaseapp.com",
@@ -152,9 +146,6 @@ const firebaseConfig = {
   messagingSenderId: "23886747884",
   appId: "1:23886747884:web:938d98eede4162df022dc9"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
@@ -209,19 +200,25 @@ if (!player) {
     localStorage.setItem("bingo_name", player);
 }
 
-const safePlayerId = player.toLowerCase().replace(/[^a-z0-9åäö]/gi, "_");
+const playerIdKey = "bingo_player_id";
+let playerId = localStorage.getItem(playerIdKey);
+
+if (!playerId) {
+    playerId = crypto.randomUUID();
+    localStorage.setItem(playerIdKey, playerId);
+}
 
 document.getElementById("player").innerText = "Spelare: " + player;
 
 const grid = document.getElementById("grid");
 
-let state = JSON.parse(localStorage.getItem("bingo_state_" + player) || "[]");
+let state = JSON.parse(localStorage.getItem("bingo_state_" + playerId) || "[]");
 let allPlayers = {};
 
 function saveState() {
-    localStorage.setItem("bingo_state_" + player, JSON.stringify(state));
+    localStorage.setItem("bingo_state_" + playerId, JSON.stringify(state));
 
-    set(ref(database, "players/" + safePlayerId), {
+    set(ref(database, "players/" + playerId), {
         name: player,
         checked: state,
         score: state.length,
