@@ -111,19 +111,17 @@ const hardTasks = [
 "Drick en hel öl (utan att någonsin ta i glaset med händerna)"
 ];
 
-// Slumpfunktion
-function shuffle(array) {
-    return array.sort(() => Math.random() - 0.5);
-}
+// Fast placering av brickor, utan slump
+// E = lätt, M = medel, H = svår
+const taskLayout = [
+    easyTasks[0],   mediumTasks[0], easyTasks[1],   hardTasks[0],   easyTasks[2],
+    mediumTasks[1], easyTasks[3],   easyTasks[4],   mediumTasks[2], easyTasks[5],
+    easyTasks[6],   hardTasks[1],   mediumTasks[3], easyTasks[7],   mediumTasks[4],
+    easyTasks[8],   mediumTasks[5], easyTasks[9],   hardTasks[2],   easyTasks[10],
+    mediumTasks[6], easyTasks[11],  easyTasks[12],  mediumTasks[7], easyTasks[13]
+];
 
-// Plocka uppgifter till brickan
-let tasks = [];
-tasks = tasks.concat(shuffle(easyTasks).slice(0,14));
-tasks = tasks.concat(shuffle(mediumTasks).slice(0,8));
-tasks = tasks.concat(shuffle(hardTasks).slice(0,3));
-
-// Slumpa hela brickan för extra blandning
-tasks = shuffle(tasks);
+let tasks = taskLayout;
 
 let player = localStorage.getItem("bingo_name");
 
